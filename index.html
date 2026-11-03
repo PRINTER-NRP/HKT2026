@@ -271,12 +271,29 @@ body{
       return;
     }
     var img=document.getElementById("rimg");
-    preview.classList.add("loading"); img.style.visibility="hidden";
-    img.onload=img.onerror=function(){ preview.classList.remove("loading"); img.style.visibility=""; };
-    img.src="certs/"+r.i+".jpg";
     img.alt="เกียรติบัตรของ "+r.n;
-    dl.href="certs/"+r.i+".jpg";
-    dl.setAttribute("download","Certificate_HackTheResearch_"+r.i+".jpg");
+    preview.classList.add("loading"); img.style.visibility="hidden";
+    // ไฟล์ใน certs/ อาจเป็น .jpg หรือ .png ก็ได้ — ลองไล่ทีละนามสกุล
+    (function(){
+      var exts=[".jpg",".png",".jpeg",".JPG",".PNG"], k=0;
+      function attempt(){
+        if(k>=exts.length){
+          preview.classList.remove("loading");
+          preview.hidden=true; dl.hidden=true;
+          pending.hidden=false;
+          return;
+        }
+        var ext=exts[k++], url="certs/"+r.i+ext;
+        img.onload=function(){
+          preview.classList.remove("loading"); img.style.visibility="";
+          dl.href=url;
+          dl.setAttribute("download","Certificate_HackTheResearch_"+r.i+ext.toLowerCase());
+        };
+        img.onerror=attempt;
+        img.src=url;
+      }
+      attempt();
+    })();
     scrim.classList.add("show"); document.body.style.overflow="hidden";
     live.textContent="พบเกียรติบัตรของ "+r.n;
     document.getElementById("close").focus();
